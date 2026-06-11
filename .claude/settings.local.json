@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Read(//c/Users/Dell/Desktop/studies/assigments/**)",
-      "Bash(head -40 __TRACKED_VAR__/README.md)"
-    ]
-  }
-}
