@@ -10,20 +10,20 @@ Built with NumPy, pandas, SciPy (clustering), scikit-learn (Ledoit-Wolf), CVXPY 
 
 ## Method
 
-**Stock selection.** Compute the correlation matrix on the train split only. Convert it to a distance matrix `d_ij = sqrt((1 - rho_ij) / 2)`, run Ward-linkage agglomerative clustering, cut into 10 clusters, then pick the member with the highest in-sample Sharpe from each cluster (medoid breaks ties). Doing this on train only avoids look-ahead bias.
+**Stock selection:** Compute the correlation matrix on the train split only. Convert it to a distance matrix `d_ij = sqrt((1 - rho_ij) / 2)`, run Ward-linkage agglomerative clustering, cut into 10 clusters, then pick the member with the highest in-sample Sharpe from each cluster (medoid breaks ties). Doing this on train only avoids look-ahead bias.
 
-**Estimation.** Annualised mean returns from the train window. Covariance is Ledoit-Wolf shrunk, which matters a lot when you only have ~500 daily observations for a 10x10 matrix.
+**Estimation:** Annualised mean returns from the train window. Covariance is Ledoit-Wolf shrunk, which matters a lot when you only have ~500 daily observations for a 10x10 matrix.
 
-**Optimisation.** Two convex programs:
+**Optimisation:** Two convex programs:
 
 - GMV: minimise `w' Σ w` subject to `sum(w) = 1`, `0 <= w <= 0.25`.
 - Max Sharpe via frontier sweep: solve `min w' Σ w s.t. mu' w >= target` for 60 target returns, then keep the weights with the best realised Sharpe. This sidesteps the non-convex direct maximisation of Sharpe.
 
 The 25% per-asset cap is what made the test-set performance recover. Without it the optimiser puts almost everything in 3 names on the train window and falls apart out of sample.
 
-**Monte Carlo frontier.** 1,000,000 Dirichlet-sampled long-only weight vectors with rejection sampling to enforce the cap. Computed in float32 chunks of 200,000 to stay within memory. The upper envelope of the resulting cloud is drawn alongside the QP solutions and the Capital Market Line.
+**Monte Carlo frontier:** 1,000,000 Dirichlet-sampled long-only weight vectors with rejection sampling to enforce the cap. Computed in float32 chunks of 200,000 to stay within memory. The upper envelope of the resulting cloud is drawn alongside the QP solutions and the Capital Market Line.
 
-**Walk-forward backtest.** Every 21 trading days inside the test window, re-fit mu and Σ on the previous 252 days, resolve both QPs, and hold those weights until the next rebalance. Reports annualised return, volatility, daily Sharpe, max drawdown and Calmar for GMV, Max Sharpe and an equal-weight baseline.
+**Walk-forward backtest:** Every 21 trading days inside the test window, re-fit mu and Σ on the previous 252 days, resolve both QPs, and hold those weights until the next rebalance. Reports annualised return, volatility, daily Sharpe, max drawdown and Calmar for GMV, Max Sharpe and an equal-weight baseline.
 
 ## Plots
 
@@ -43,7 +43,7 @@ Stock-selection method comparison:
 
 ![Methods](images/methods_performance_comparison.png)
 
-## What I found
+## What We found
 
 - Unconstrained Max Sharpe placed about 97% of the weight in 3 names on the train split and gave near-zero Sharpe on test. Adding the 25% cap and shrinking Σ brought test Sharpe back to near equal-weight.
 - Picking the 10 stocks on the full sample vs train-only changes the selection. Train-only is the right call.
